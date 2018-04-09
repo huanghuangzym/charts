@@ -1,0 +1,60 @@
+# Default values for zookeeper.
+# This is a YAML-formatted file.
+# Declare name/value pairs to be passed into your templates.
+# name: value
+
+  
+#nodes list ,use host mode,every nodes deploy one zk node
+nodename:
+  - "10.0.0.4"
+  - "10.0.0.5"
+  - "10.0.0.6"
+
+#helm create multideployment must seprator
+sepreator: ---
+
+
+#Desired cluster size. 3, 5, or 7 are good choices. You will need this many hosts to reach your desired scale.
+zookeeper_size:
+  mem: 512
+  cpu: 1
+#the used image tag
+image_tag: 3.5.1beat
+
+#The client port of Zookeeper.
+client_port: 2181
+
+#The server port of Zookeeper. use to comminute with other node in zk cluster
+server_port1: 2888
+
+#The server port of Zookeepe,leader use
+server_port2: 3888
+
+#the data dir
+data_dir: "/zookeeper/data"
+#Zookeeper data log directory
+data_log_dir: "/zookeeper/datalog"
+mount_volume: false
+
+#The number of milliseconds of each tick
+tick_time: 2000
+
+#Amount of time, in ticks (see tickTime), 
+#to allow followers to connect and sync to a leader. 
+#Increased this value as needed, 
+#if the amount of data managed by ZooKeeper is large
+init_limit: 10
+
+#Amount of time, in ticks (see tickTime), 
+#to allow followers to sync with ZooKeeper. 
+#If followers fall too far behind a leader, they will be dropped.
+sync_limit: 5
+
+#the admin server use port,if not set,default is 8080
+adminport: 9095
+
+  
+  
+imagePullPolicy: "Always"
+
+

@@ -1,0 +1,75 @@
+{{- $imagePullPolicy := .Values.imagePullPolicy -}}
+{{- $chartname := .Chart.Name -}}
+{{- $chartversion := .Chart.Version -}}
+{{- $chartversion := .Chart.Version -}}
+{{- $relname := .Release.Name -}}
+{{- $relservice := .Release.Service -}}
+{{- $image_tag := .Values.image_tag -}}
+{{- $client_port := .Values.client_port -}}
+{{- $server_port1 := .Values.server_port1 -}}
+{{- $server_port2 := .Values.server_port2 -}}
+{{- $tick_time := .Values.tick_time -}}
+{{- $init_limit := .Values.init_limit -}}
+{{- $sync_limit := .Values.sync_limit -}}
+{{- $adminport := .Values.adminport -}}
+{{- $server := .Values.server -}}
+{{- $sep := .Values.sepreator -}}
+{{- $vnodename := .Values.nodename -}}
+
+
+{{- range $index, $realnodename := .Values.nodename }}
+{{ $sep }}
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: "zookeeper-{{ $realnodename }}"
+  labels:
+    app: {{ $chartname }}
+    chart: "{{ $chartname }}-{{ $chartversion }}"
+    release: {{ $relname }}
+    heritage: {{ $relservice }}
+spec:
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: {{ $chartname }}
+        release: {{ $relname }}
+    spec:
+      hostNetwork: true
+      nodeName: "{{ $realnodename }}"
+      containers:
+      - name: {{ $chartname }}-server
+        imagePullPolicy: {{ $imagePullPolicy }}
+        image: index.alauda.cn/alaudaorg/catalog-zookeeper:{{ $image_tag }}
+        ports:
+        - containerPort: {{ $client_port }}
+          hostPort: {{ $client_port }}
+        - containerPort: {{ $server_port1 }}
+          hostPort: {{ $server_port1 }}
+        - containerPort: {{ $server_port2 }}
+          hostPort: {{ $server_port2 }}
+          
+        env:
+        - name : ZOO_TICK_TIME
+          value: "{{ $tick_time }}"
+        - name : ZOO_INIT_LIMIT
+          value: "{{ $init_limit }}"
+        - name : ZOO_SYNC_LIMIT
+          value: "{{ $sync_limit }}"
+        - name: ZOO_PORT
+          value: "{{ $client_port }}"
+        - name: ZOO_SERVER_PORT
+          value: "{{ $server_port1 }}"
+        - name: ZOO_ELECTION_PORT
+          value: "{{ $server_port2 }}"
+        - name: ZOO_ADMIN_PORT
+          value: "{{ $adminport }}"
+        - name: ZOO_MY_ID
+          value: "{{ $index }}"
+        - name: ZOO_SERVERS
+          value: |-
+            {{- range $id, $rnname := $vnodename }}
+              server.{{ $id }}={{ $rnname }}:{{ $server_port1 }}:{{ $server_port2 }}
+            {{- end }}
+{{- end }}
